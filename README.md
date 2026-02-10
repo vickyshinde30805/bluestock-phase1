@@ -54,6 +54,16 @@ Available endpoints:
 
 
 ---
+## Backend Live URL (Render)
+
+Base URL:
+https://bluestock-phase1-backend.onrender.com
+
+Endpoints:
+- /health
+- /db-test
+
+---
 
 ## ⚙️ Setup Instructions (Run Locally)
 
