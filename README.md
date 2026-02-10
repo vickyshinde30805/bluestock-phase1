@@ -44,6 +44,17 @@ https://bluestock-phase1-ch6dm0j6p-vicky-shindes-projects-b1d3a340.vercel.app
 
 ---
 
+## Backend (Neon PostgreSQL)
+
+A minimal Express backend is included inside `/server`.
+
+Available endpoints:
+- `/health` → checks server status
+- `/db-test` → verifies Neon PostgreSQL connection
+
+
+---
+
 ## ⚙️ Setup Instructions (Run Locally)
 
 ### 1) Clone the repository
