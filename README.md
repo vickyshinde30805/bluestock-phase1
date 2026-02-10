@@ -1,19 +1,52 @@
-# React + Vite
+# Bluestock Phase 1 – Fintech Internship Task
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is created as part of my **Software Developer Engineer Internship** at **Bluestock Finance** (Phase 1 – Foundation).
 
-Currently, two official plugins are available:
+It includes a working setup of:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React + Vite project boilerplate
+- Tailwind CSS UI setup
+- Firebase Google Authentication
+- IndexedDB storage for user session data
+- GitHub + Vercel deployment pipeline
 
-## React Compiler
+---
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+## 🔗 Live Demo
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-## Live Demo
 https://bluestock-phase1-ch6dm0j6p-vicky-shindes-projects-b1d3a340.vercel.app
+
+---
+
+## ✅ Features Implemented (Phase 1)
+
+- ⚡ React + Vite setup
+- 🎨 Tailwind CSS configured and working
+- 🔐 Google Sign-in using Firebase Authentication
+- 🚪 Logout functionality
+- 🔒 Protected route (Dashboard requires login)
+- 💾 IndexedDB storage using `idb`
+  - Saves user info after login
+  - Displays stored email + login time
+  - Clears IndexedDB on logout
+- 🚀 Deployed on Vercel with CI/CD from GitHub
+
+---
+
+## 🧰 Tech Stack
+
+- **Frontend:** React (Vite)
+- **Styling:** Tailwind CSS
+- **Authentication:** Firebase Auth (Google)
+- **Local Storage:** IndexedDB (`idb`)
+- **Deployment:** Vercel
+- **Version Control:** Git + GitHub
+
+---
+
+## ⚙️ Setup Instructions (Run Locally)
+
+### 1) Clone the repository
+```bash
+git clone https://github.com/vickyshinde30805/bluestock-phase1.git
+cd bluestock-phase1
