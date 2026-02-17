@@ -1,61 +1,112 @@
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
-import { useEffect, useState } from "react";
-import { getUser, saveUser, clearUser } from "../storage/indexedDb";
+import { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+
+import Heatmap from "../components/Heatmap";
+import { calculateStreak } from "../utils/streak";
+
+// IndexedDB activity DB functions
+import {
+    saveDailyActivity,
+    getAllDailyActivity,
+} from "../storage/activityDb";
 
 export default function Dashboard() {
     const user = auth.currentUser;
-    const [storedUser, setStoredUser] = useState(null);
 
+    const [activity, setActivity] = useState([]);
+    const [streak, setStreak] = useState(0);
+
+    // Load activity from IndexedDB on page load
     useEffect(() => {
-        const syncUser = async () => {
-            const u = await getUser();
-
-            // If IndexedDB is empty but Firebase user exists, store it now
-            if (!u && user) {
-                await saveUser({
-                    email: user.email,
-                    name: user.displayName,
-                    photo: user.photoURL,
-                    loginTime: new Date().toISOString(),
-                });
-            }
-
-            const updated = await getUser();
-            setStoredUser(updated);
+        const load = async () => {
+            const all = await getAllDailyActivity();
+            setActivity(all);
         };
+        load();
+    }, []);
 
-        syncUser();
-    }, [user]);
+    // Update streak whenever activity changes
+    useEffect(() => {
+        const streakCount = calculateStreak(activity);
+        setStreak(streakCount);
+    }, [activity]);
+
+    const today = useMemo(() => dayjs().format("YYYY-MM-DD"), []);
 
     const handleLogout = async () => {
         await signOut(auth);
-        await clearUser();
+    };
+
+    // TEST BUTTON: Save today as solved
+    const handleMarkTodaySolved = async () => {
+        const entry = {
+            date: today,
+            solved: true,
+            score: 120,
+            timeTaken: 45,
+            difficulty: 2,
+            synced: false,
+        };
+
+        await saveDailyActivity(entry);
+
+        // refresh activity list
+        const all = await getAllDailyActivity();
+        setActivity(all);
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 p-6">
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8">
-                <h1 className="text-2xl font-bold text-slate-900">Dashboard ✅</h1>
+        <div className="min-h-screen bg-[#F6F5F5] p-6">
+            <div className="max-w-4xl mx-auto space-y-6">
+                {/* TOP CARD */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+                    <h1 className="text-2xl font-bold text-[#222222] flex items-center gap-2">
+                        Dashboard <span>✅</span>
+                    </h1>
 
-                <p className="mt-4 text-slate-700">
-                    Firebase user: <b>{user?.email}</b>
-                </p>
+                    <p className="mt-4 text-slate-700">
+                        Firebase user: <b>{user?.email}</b>
+                    </p>
 
-                <p className="mt-2 text-slate-700">
-                    IndexedDB stored: <b>{storedUser?.email || "Not saved"}</b>
-                </p>
+                    <p className="mt-2 text-slate-700">
+                        🔥 Current Streak: <b>{streak} days</b>
+                    </p>
 
-                <p className="mt-2 text-slate-600 text-sm">
-                    Login time: {storedUser?.loginTime || "-"}
-                </p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                        {/* Logout */}
+                        <button
+                            onClick={handleLogout}
+                            className="px-6 py-3 rounded-xl bg-[#F05537] text-white font-semibold hover:opacity-90 transition"
+                        >
+                            Logout
+                        </button>
 
-                <button
-                    onClick={handleLogout}
-                    className="mt-6 px-6 py-3 rounded-xl bg-red-600 text-white font-semibold"
-                >
-                    Logout
-                </button>
+                        {/* Test Button */}
+                        <button
+                            onClick={handleMarkTodaySolved}
+                            className="px-6 py-3 rounded-xl bg-[#414BEA] text-white font-semibold hover:opacity-90 transition"
+                        >
+                            Mark Today Solved (Test)
+                        </button>
+                    </div>
+                </div>
+
+                {/* HEATMAP CARD */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+                    <h2 className="text-xl font-bold text-[#222222]">
+                        Activity Heatmap
+                    </h2>
+
+                    <p className="mt-2 text-slate-600">
+                        GitHub-style daily completion tracker (offline-first)
+                    </p>
+
+                    <div className="mt-6">
+                        <Heatmap activity={activity} />
+                    </div>
+                </div>
             </div>
         </div>
     );

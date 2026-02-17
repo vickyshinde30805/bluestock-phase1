@@ -46,3 +46,23 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Backend running on port ${PORT}`);
 });
+
+app.post("/sync/daily-scores", async (req, res) => {
+  try {
+    const { userEmail, entries } = req.body;
+
+    if (!userEmail) {
+      return res.json({ success: false, error: "Missing userEmail" });
+    }
+
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.json({ success: false, error: "No entries to sync" });
+    }
+
+    // For Phase-1 demo: Just return OK
+    // Later: Insert into Neon DB
+    return res.json({ success: true, synced: entries.length });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
