@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model daily_scores {
+  id         Int      @id @default(autoincrement())
+  email      String
+  date       DateTime @db.Date
+  score      Int?
+  time_taken Int?
+
+  @@unique([email, date])
+}

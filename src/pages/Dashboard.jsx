@@ -6,17 +6,24 @@ import dayjs from "dayjs";
 import Heatmap from "../components/Heatmap";
 import { calculateStreak } from "../utils/streak";
 
-// IndexedDB activity DB functions
+// IndexedDB functions
 import {
     saveDailyActivity,
     getAllDailyActivity,
+    getUnsyncedActivity,
+    markActivitySynced,
 } from "../storage/activityDb";
+
+// API sync function
+import { syncDailyScores } from "../api/sync";
 
 export default function Dashboard() {
     const user = auth.currentUser;
 
     const [activity, setActivity] = useState([]);
     const [streak, setStreak] = useState(0);
+
+    const today = useMemo(() => dayjs().format("YYYY-MM-DD"), []);
 
     // Load activity from IndexedDB on page load
     useEffect(() => {
@@ -32,8 +39,6 @@ export default function Dashboard() {
         const streakCount = calculateStreak(activity);
         setStreak(streakCount);
     }, [activity]);
-
-    const today = useMemo(() => dayjs().format("YYYY-MM-DD"), []);
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -55,6 +60,39 @@ export default function Dashboard() {
         // refresh activity list
         const all = await getAllDailyActivity();
         setActivity(all);
+    };
+
+    // SYNC BUTTON: Push unsynced data to backend
+    const handleSync = async () => {
+        if (!user?.email) {
+            alert("Please login first");
+            return;
+        }
+
+        const unsynced = await getUnsyncedActivity();
+
+        if (unsynced.length === 0) {
+            alert("Nothing to sync ✅");
+            return;
+        }
+
+        const payload = unsynced.map((a) => ({
+            date: a.date,
+            score: a.score,
+            timeTaken: a.timeTaken,
+        }));
+
+        const result = await syncDailyScores(user.email, payload);
+
+        if (result.success) {
+            await markActivitySynced(unsynced.map((x) => x.date));
+            alert("Synced successfully ✅");
+
+            const all = await getAllDailyActivity();
+            setActivity(all);
+        } else {
+            alert("Sync failed: " + result.error);
+        }
     };
 
     return (
@@ -89,6 +127,14 @@ export default function Dashboard() {
                             className="px-6 py-3 rounded-xl bg-[#414BEA] text-white font-semibold hover:opacity-90 transition"
                         >
                             Mark Today Solved (Test)
+                        </button>
+
+                        {/* Sync Button */}
+                        <button
+                            onClick={handleSync}
+                            className="px-6 py-3 rounded-xl bg-[#190482] text-white font-semibold hover:opacity-90 transition"
+                        >
+                            Sync Now
                         </button>
                     </div>
                 </div>
