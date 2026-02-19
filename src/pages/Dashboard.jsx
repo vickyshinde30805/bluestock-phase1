@@ -1,7 +1,8 @@
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 import Heatmap from "../components/Heatmap";
 import { calculateStreak } from "../utils/streak";
@@ -18,12 +19,29 @@ import {
 import { syncDailyScores } from "../api/sync";
 
 export default function Dashboard() {
-    const user = auth.currentUser;
+    const navigate = useNavigate();
+
+    // ✅ store firebase user in state
+    const [user, setUser] = useState(null);
 
     const [activity, setActivity] = useState([]);
     const [streak, setStreak] = useState(0);
 
     const today = useMemo(() => dayjs().format("YYYY-MM-DD"), []);
+
+    // ✅ Listen for Firebase auth state changes
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (u) => {
+            setUser(u);
+
+            // if user is logged out, redirect to login
+            if (!u) {
+                navigate("/login");
+            }
+        });
+
+        return () => unsub();
+    }, [navigate]);
 
     // Load activity from IndexedDB on page load
     useEffect(() => {
@@ -41,7 +59,12 @@ export default function Dashboard() {
     }, [activity]);
 
     const handleLogout = async () => {
-        await signOut(auth);
+        try {
+            await signOut(auth);
+            // navigate will happen automatically from onAuthStateChanged
+        } catch (err) {
+            alert("Logout failed: " + err.message);
+        }
     };
 
     // TEST BUTTON: Save today as solved
@@ -64,6 +87,7 @@ export default function Dashboard() {
 
     // SYNC BUTTON: Push unsynced data to backend
     const handleSync = async () => {
+        // ✅ Always check latest user state
         if (!user?.email) {
             alert("Please login first");
             return;
@@ -105,7 +129,7 @@ export default function Dashboard() {
                     </h1>
 
                     <p className="mt-4 text-slate-700">
-                        Firebase user: <b>{user?.email}</b>
+                        Firebase user: <b>{user?.email || "Loading..."}</b>
                     </p>
 
                     <p className="mt-2 text-slate-700">
@@ -141,9 +165,7 @@ export default function Dashboard() {
 
                 {/* HEATMAP CARD */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
-                    <h2 className="text-xl font-bold text-[#222222]">
-                        Activity Heatmap
-                    </h2>
+                    <h2 className="text-xl font-bold text-[#222222]">Activity Heatmap</h2>
 
                     <p className="mt-2 text-slate-600">
                         GitHub-style daily completion tracker (offline-first)
