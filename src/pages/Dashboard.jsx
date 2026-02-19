@@ -59,14 +59,10 @@ export default function Dashboard() {
     }, [activity]);
 
     const handleLogout = async () => {
-        try {
-            await signOut(auth);
-            // navigate will happen automatically from onAuthStateChanged
-        } catch (err) {
-            alert("Logout failed: " + err.message);
-        }
+        await signOut(auth);
+        alert("Logged out ✅");
+        window.location.href = "/login";
     };
-
     // TEST BUTTON: Save today as solved
     const handleMarkTodaySolved = async () => {
         const entry = {
