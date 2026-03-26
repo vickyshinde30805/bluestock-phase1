@@ -70,4 +70,4 @@ Endpoints:
 ### 1) Clone the repository
 ```bash
 git clone https://github.com/vickyshinde30805/bluestock-phase1.git
-cd bluestock-phase1
+cd bluestock-phase1 ..
